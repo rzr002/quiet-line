@@ -12,6 +12,19 @@ final class CurveView: NSView {
     var opacity = 0.72
     var thickness = 1.3
     var onHide: (() -> Void)?
+    var allowsInteraction = true
+    var canvasBackground: NSColor?
+    private var mode: CurveMode = .line
+    private var text = ""
+    private var fontSize = 14.0
+    private var textSpeed = 18.0
+    private var glyphs: [String] = []
+    private var flow = TextCurveFlow(glyphWidths: [])
+    private var font = NSFont.systemFont(ofSize: 14)
+    private var textHeight = 18.0
+    private var textOffset = 0.0
+    private var lastAnimationAt: Date?
+    private var visible = false
     private var lastPointAt: Date?
     private var receivedAt: Date?
     private var animationTimer: Timer?
@@ -21,6 +34,31 @@ final class CurveView: NSView {
     private var dragOrigin: NSPoint?
     override var isOpaque: Bool { false }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    func configure(model: AppModel, visible: Bool) {
+        ink = model.ink.color
+        opacity = model.opacity
+        thickness = model.thickness
+        mode = model.curveMode
+        textSpeed = model.textSpeed
+        if text != model.textContent || fontSize != model.textFontSize {
+            text = model.textContent
+            fontSize = model.textFontSize
+            font = NSFont.systemFont(ofSize: fontSize)
+            glyphs = TextCurveContent.glyphs(from: text)
+            var measured: [String: Double] = [:]
+            let attributes: [NSAttributedString.Key: Any] = [.font: font]
+            flow = TextCurveFlow(glyphWidths: glyphs.map { glyph in
+                if let width = measured[glyph] { return width }
+                let width = (glyph as NSString).size(withAttributes: attributes).width + 0.8
+                measured[glyph] = width
+                return width
+            })
+            textHeight = ("国Ag" as NSString).size(withAttributes: attributes).height
+            textOffset = 0
+        }
+        updateSeries(model.series, receivedAt: model.fetchedAt, visible: visible)
+    }
 
     func updateSeries(_ series: PriceSeries?, receivedAt: Date?, visible: Bool) {
         let next = CurveGeometry.normalize(series?.points.map(\.price) ?? [])
@@ -33,8 +71,10 @@ final class CurveView: NSView {
         points = next
         self.lastPointAt = series?.points.last?.time
         self.receivedAt = receivedAt
-        if visible && (updating(at: Date()) || isTransitioning) {
+        self.visible = visible
+        if shouldAnimate {
             if animationTimer == nil {
+                lastAnimationAt = Date()
                 let timer = Timer(timeInterval: 1.0 / 24, repeats: true) { [weak self] _ in
                     MainActor.assumeIsolated { self?.tick() }
                 }
@@ -45,6 +85,10 @@ final class CurveView: NSView {
         needsDisplay = true
     }
 
+    private var scrolling: Bool { mode == .text && textSpeed > 0 && !glyphs.isEmpty && points.count >= 2 }
+    private var shouldAnimate: Bool {
+        visible && (scrolling || isTransitioning || (mode == .line && updating(at: Date())))
+    }
     private var isTransitioning: Bool { transitionFrom != nil && Date().timeIntervalSince(transitionBegan) < 0.55 }
     private func updating(at date: Date) -> Bool {
         CurveActivity.isUpdating(lastPointAt: lastPointAt, receivedAt: receivedAt, now: date)
@@ -57,15 +101,27 @@ final class CurveView: NSView {
         return CurvePoint(x: target.x, y: from.y + (target.y - from.y) * eased)
     }
     private func tick() {
+        let now = Date()
+        // Keep a hidden settings preview at its reading position without scheduling redraws.
+        guard window?.isVisible != false else { lastAnimationAt = now; return }
+        if scrolling, let lastAnimationAt, flow.cycleWidth > 0 {
+            textOffset = (textOffset + max(0, now.timeIntervalSince(lastAnimationAt)) * textSpeed)
+                .truncatingRemainder(dividingBy: flow.cycleWidth)
+        }
+        lastAnimationAt = now
         needsDisplay = true
-        if !updating(at: Date()) && !isTransitioning { stopAnimation() }
+        if !shouldAnimate { stopAnimation() }
     }
-    private func stopAnimation() { animationTimer?.invalidate(); animationTimer = nil }
+    func stopAnimation() { animationTimer?.invalidate(); animationTimer = nil; lastAnimationAt = nil }
 
     override func draw(_ dirtyRect: NSRect) {
         guard let context = NSGraphicsContext.current?.cgContext else { return }
-        context.clear(bounds)
+        if let canvasBackground {
+            context.setFillColor(canvasBackground.cgColor)
+            context.fill(bounds)
+        } else { context.clear(bounds) }
         guard points.count >= 2 else { return }
+        if mode == .text { drawText(); return }
         let inset = 6.0
         let now = Date()
         let endpoint = displayedEndpoint(at: now)!
@@ -96,17 +152,31 @@ final class CurveView: NSView {
         context.fillEllipse(in: CGRect(x: end.x - radius, y: end.y - radius, width: radius * 2, height: radius * 2))
     }
 
+    private func drawText() {
+        var displayed = points
+        if let endpoint = displayedEndpoint(at: Date()) { displayed[displayed.count - 1] = endpoint }
+        let positions = flow.placements(points: displayed, width: bounds.width, height: bounds.height,
+                                        inset: max(6, textHeight / 2 + 2), offset: textOffset)
+        let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink.withAlphaComponent(opacity)]
+        for position in positions {
+            (glyphs[position.index] as NSString).draw(at: NSPoint(x: position.x, y: position.y - textHeight / 2),
+                                                     withAttributes: attributes)
+        }
+    }
+
     override func mouseDown(with event: NSEvent) {
+        guard allowsInteraction else { return }
         if event.clickCount == 2 { onHide?(); return }
         dragStart = NSEvent.mouseLocation
         dragOrigin = window?.frame.origin
     }
     override func mouseDragged(with event: NSEvent) {
-        guard let start = dragStart, let origin = dragOrigin else { return }
+        guard allowsInteraction, let start = dragStart, let origin = dragOrigin else { return }
         let cursor = NSEvent.mouseLocation
         window?.setFrameOrigin(NSPoint(x: origin.x + cursor.x - start.x, y: origin.y + cursor.y - start.y))
     }
     override func mouseUp(with event: NSEvent) {
+        guard allowsInteraction else { return }
         defer { dragStart = nil; dragOrigin = nil }
         if let origin = window?.frame.origin {
             UserDefaults.standard.set(NSStringFromPoint(origin), forKey: "overlayOrigin")
@@ -157,11 +227,7 @@ final class OverlayController {
             }
             panel.setFrame(frame, display: false)
         }
-        curve.updateSeries(model.series, receivedAt: model.fetchedAt, visible: model.visible)
-        curve.ink = model.ink.color
-        curve.opacity = model.opacity
-        curve.thickness = model.thickness
-        curve.needsDisplay = true
+        curve.configure(model: model, visible: model.visible)
         panel.ignoresMouseEvents = false
         if model.visible && curve.points.count >= 2 { panel.orderFrontRegardless() } else { panel.orderOut(nil) }
     }

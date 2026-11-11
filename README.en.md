@@ -6,11 +6,11 @@
 
 **One market curve on your desktop.**
 
-Choose a symbol, place its transparent curve in a corner, and double-click to hide it. The floating window shows the curve and a small endpoint. Symbol names and settings live in a separate window.
+Choose a symbol, place its transparent curve in a corner, and double-click to hide it. Keep the line and endpoint, or let a sentence or novel scroll along the real price shape. Symbol names and settings live in a separate window.
 
-[Build the Mac demo](#run-on-your-mac) · [简体中文](README.md) · [Development](docs/DEVELOPMENT.md) · [Report an issue](https://github.com/rzr002/quiet-line/issues)
+[Download for Mac](https://github.com/rzr002/quiet-line/releases/latest) · [简体中文](README.md) · [Development](docs/DEVELOPMENT.md) · [Report an issue](https://github.com/rzr002/quiet-line/issues)
 
-**Early source demo for macOS 14+. Building requires Swift 6. The settings interface is currently in Chinese.**
+**Early demo for macOS 14+. Universal download for Apple Silicon and Intel. The settings interface is currently in Chinese.**
 
 ## Keep one shape in view
 
@@ -24,14 +24,35 @@ Choose a symbol, place its transparent curve in a corner, and double-click to hi
 | Place the curve | Drag its transparent window |
 | Hide it | Double-click the curve area |
 | Bring it back | Open settings and click 显示曲线 (Show curve) |
+| Form the curve with text | Select 文字曲线 (Text curve), type text or import a TXT file |
 | Adjust its appearance | Change color, opacity, stroke width and dimensions |
 | Open settings or quit | Use the curve icon in the macOS menu bar |
 
 The borderless window stays above other windows while settings can be closed separately. Its small endpoint breathes while the data is fresh and the connection is healthy. New prices move the endpoint with a short transition.
 
+## Read along the curve
+
+Text mode shows upright characters following the actual market shape, scrolling from right to left in a loop. It draws text without the line or endpoint. Paste a sentence, use a sample, or import a local TXT file (up to 5 MB; UTF-8, BOM-marked UTF-16, or GB18030).
+
+Set speed from 0 to 100 px/s and font size from 9 to 24 pt. Zero pauses scrolling. Market updates and symbol changes keep the reading position; changing the text or font size restarts it. Text and preferences stay on the local Mac. Weather copy is an example, not a live forecast. Scrolling alone does not indicate a new trade.
+
 ## Run on your Mac
 
-With macOS 14+ and a Swift 6 toolchain installed:
+### Install the DMG
+
+**[Download Quiet Line 0.4.0 for Mac](https://github.com/rzr002/quiet-line/releases/download/v0.4.0/Quiet-Line-0.4.0-macOS-universal.dmg)** · [ZIP alternative](https://github.com/rzr002/quiet-line/releases/download/v0.4.0/Quiet-Line-0.4.0-macOS-universal.zip)
+
+1. Open the DMG and drag `Quiet Line.app` onto **Applications**.
+2. Open Quiet Line from Applications. Quit an existing copy before replacing it.
+3. Choose a symbol, drag the curve into place, then click 收起设置 (Close settings).
+
+The download is precompiled and does not require Swift, Xcode or Python to run. Requires macOS 14+. The Universal binary contains both Apple Silicon and Intel slices.
+
+This demo is ad-hoc signed and **has not been signed with a Developer ID or notarized by Apple**. A first-launch security prompt is possible. Check the release source and checksum file, then follow [Apple's guidance](https://support.apple.com/en-us/102445) if you choose to trust this version. See [INSTALL.txt](docs/INSTALL.txt) for details.
+
+### Build from source
+
+Building locally requires a Swift 6 toolchain:
 
 ```bash
 git clone https://github.com/rzr002/quiet-line.git
@@ -40,11 +61,7 @@ bash scripts/build.sh
 open "dist/Quiet Line.app"
 ```
 
-Choose a symbol in the left sidebar, drag the curve into place, and click 收起设置 (Close settings). On subsequent launches, open the generated `.app` directly.
-
-If you already have the project folder, double-click `启动.command` to build when needed and launch it.
-
-There is no standalone installer yet. The script builds for the current Mac architecture and applies a local ad-hoc signature. The app is not Apple-notarized.
+You can also double-click `启动.command` in an existing source folder. Rebuild after updating the source.
 
 ## Markets
 

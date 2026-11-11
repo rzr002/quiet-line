@@ -1,5 +1,6 @@
 import SwiftUI
 import QuietLineCore
+import UniformTypeIdentifiers
 
 private let paper = Color(red: 0.965, green: 0.957, blue: 0.937)
 private let darkInk = Color(red: 0.20, green: 0.24, blue: 0.22)
@@ -11,6 +12,8 @@ struct SettingsView: View {
     @State private var code = ""
     @State private var venue: Venue = .perpetual
     @State private var addError: String?
+    @State private var importingText = false
+    @State private var textError: String?
 
     var body: some View {
         HStack(spacing: 0) {
@@ -19,9 +22,13 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 preview
-                appearance
-                interactions
-                Spacer(minLength: 0)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 22) {
+                        displayMode
+                        if model.curveMode == .text { textControls }
+                        appearance
+                    }.padding(.trailing, 4)
+                }
                 footer
             }
             .padding(.horizontal, 28).padding(.top, 28).padding(.bottom, 22)
@@ -29,6 +36,19 @@ struct SettingsView: View {
         }
         .frame(width: 700, height: 672)
         .background(paper).foregroundStyle(darkInk).tint(darkInk).preferredColorScheme(.light)
+        .fileImporter(isPresented: $importingText, allowedContentTypes: [.plainText]) { result in
+            do {
+                let url = try result.get()
+                let scoped = url.startAccessingSecurityScopedResource()
+                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+                guard size <= 5 * 1_024 * 1_024 else {
+                    textError = "TXT 请控制在 5 MB 以内，可以按章节导入。"; return
+                }
+                model.textContent = try TextCurveContent.decode(Data(contentsOf: url))
+                textError = nil
+            } catch { textError = error.localizedDescription }
+        }
     }
 
     private var sidebar: some View {
@@ -73,10 +93,14 @@ struct SettingsView: View {
                 Text("你的桌面，只留走势。")
                     .font(.system(size: 23, weight: .regular, design: .serif)).tracking(-0.7)
                 Spacer()
-                Text("01 / DEMO").font(.system(size: 9, design: .monospaced)).foregroundStyle(muted)
+                Text("QUIET LINE").font(.system(size: 9, design: .monospaced)).foregroundStyle(muted)
             }
-            Text("一条曲线，一个呼吸的点。其余都藏起来。")
-                .font(.system(size: 11)).foregroundStyle(muted)
+            HStack {
+                Text(model.curveMode == .line ? "一条曲线，一个呼吸的点。其余都藏起来。" : "让文字沿着行情起伏，慢慢读，也慢慢看。")
+                    .font(.system(size: 11)).foregroundStyle(muted)
+                Spacer(minLength: 8)
+                Button(model.visible ? "隐藏曲线" : "显示曲线") { model.visible.toggle() }.controlSize(.mini)
+            }
         }
     }
 
@@ -93,12 +117,13 @@ struct SettingsView: View {
                 }.buttonStyle(.plain).disabled(model.loading).help("刷新行情")
             }
             ZStack {
-                CurvePreview(values: model.series?.points.map(\.price) ?? [],
-                             color: Color(nsColor: model.ink.color), opacity: model.opacity, width: model.thickness,
-                             updating: CurveActivity.isUpdating(lastPointAt: model.series?.points.last?.time,
-                                                               receivedAt: model.fetchedAt, now: Date()))
+                CurvePreview(model: model)
                 if model.series == nil {
                     Text(model.loading ? "正在获取曲线…" : "等待可用行情")
+                        .font(.system(size: 11)).foregroundStyle(muted)
+                }
+                if model.curveMode == .text && !model.textContent.contains(where: { !$0.isWhitespace }) {
+                    Text("写点文字，或导入一个 TXT")
                         .font(.system(size: 11)).foregroundStyle(muted)
                 }
             }.frame(height: 88).padding(.vertical, 10)
@@ -123,10 +148,64 @@ struct SettingsView: View {
         return "成交 \(formatter.string(from: last.time)) 北京 · 每 2 秒更新"
     }
 
+    private var displayMode: some View {
+        HStack {
+            label("显示方式")
+            Spacer()
+            Picker("显示方式", selection: $model.curveMode) {
+                Text("线条").tag(CurveMode.line)
+                Text("文字曲线").tag(CurveMode.text)
+            }.pickerStyle(.segmented).labelsHidden().frame(width: 205)
+        }
+    }
+
+    private var textControls: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                label("沿线文字")
+                Spacer()
+                Button("导入 TXT…") { importingText = true }.controlSize(.small)
+            }
+            if model.textContent.utf8.count > 16_000 {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(String(model.textContent.prefix(130)) + "…")
+                        .font(.system(size: 11)).lineLimit(3)
+                    HStack {
+                        Text("已载入长文本 · 自动循环").font(.system(size: 10)).foregroundStyle(muted)
+                        Spacer()
+                        Button("清空重写") { model.textContent = "" }.controlSize(.mini)
+                    }
+                }.padding(10).background(.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 5))
+            } else {
+                TextEditor(text: $model.textContent)
+                    .font(.system(size: 12)).scrollContentBackground(.hidden)
+                    .padding(6).frame(height: 68)
+                    .background(.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 5))
+                    .overlay(RoundedRectangle(cornerRadius: 5).stroke(darkInk.opacity(0.12), lineWidth: 0.6))
+                    .accessibilityLabel("循环显示的文字")
+            }
+            HStack(spacing: 8) {
+                Button("座右铭") { useText("行到水穷处，坐看云起时。") }
+                Button("天气文案") { useText("今日天气文案示例：晴间多云，微风经过窗边，适合出门散步。") }
+                Button("小说片段") { useText("末班车驶过旧桥时，江面上亮起了第一盏灯。林舟把信折好，放进大衣口袋，走向那家还没打烊的书店。门铃响起，柜台后的猫抬了抬眼。") }
+            }.controlSize(.mini)
+            sliderRow("滚动速度", value: $model.textSpeed, range: 0...100,
+                      valueText: model.textSpeed == 0 ? "暂停" : "\(Int(model.textSpeed.rounded()))px/s")
+            sliderRow("字号", value: $model.textFontSize, range: 9...24, valueText: "\(Int(model.textFontSize))pt")
+            Text(textError ?? "短句和小说都会从头循环。TXT 仅保存在本机；天气文案是示例，不是实时预报。")
+                .font(.system(size: 10)).foregroundStyle(textError == nil ? muted : .brown)
+        }
+    }
+
+    private func useText(_ text: String) {
+        model.textContent = text
+        textError = nil
+    }
+
     private var appearance: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                label("线条")
+                label("颜色")
                 Spacer()
                 ForEach(Ink.allCases, id: \.rawValue) { ink in
                     Button { model.ink = ink } label: {
@@ -136,22 +215,11 @@ struct SettingsView: View {
                 }
             }
             sliderRow("不透明度", value: $model.opacity, range: 0.15...1, valueText: "\(Int(model.opacity * 100))%")
-            sliderRow("线宽", value: $model.thickness, range: 0.6...3, valueText: String(format: "%.1f", model.thickness))
+            if model.curveMode == .line {
+                sliderRow("线宽", value: $model.thickness, range: 0.6...3, valueText: String(format: "%.1f", model.thickness))
+            }
             sliderRow("宽度", value: $model.width, range: 160...720, valueText: "\(Int(model.width))")
             sliderRow("高度", value: $model.height, range: 36...180, valueText: "\(Int(model.height))")
-        }
-    }
-
-    private var interactions: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Rectangle().fill(darkInk.opacity(0.1)).frame(height: 0.6)
-            HStack {
-                Button(model.visible ? "隐藏曲线" : "显示曲线") { model.visible.toggle() }.controlSize(.small)
-                Spacer()
-                Text(model.visible ? "正在桌面显示" : "已隐藏").foregroundStyle(muted)
-            }.font(.system(size: 11))
-            Text("单击拖动，双击隐藏。回来时在这里点「显示曲线」。")
-                .font(.system(size: 10)).foregroundStyle(muted)
         }
     }
 
@@ -169,11 +237,11 @@ struct SettingsView: View {
             if let message = addError ?? model.error {
                 Text(message).font(.system(size: 10)).foregroundStyle(.brown).lineLimit(2)
             } else {
-                Text(model.series.map { $0.source + " · 呼吸表示行情更新中" } ?? "选择左侧标的，即可挂到桌面")
+                Text(model.series.map { $0.source + (model.curveMode == .line ? " · 呼吸表示行情更新中" : " · 字形走势随行情更新") } ?? "选择左侧标的，即可挂到桌面")
                     .font(.system(size: 9)).foregroundStyle(muted)
             }
             HStack {
-                Text("菜单栏曲线图标 → 设置 / 退出").font(.system(size: 10)).foregroundStyle(muted)
+                Text("拖动定位 · 双击隐藏 · 菜单栏退出").font(.system(size: 10)).foregroundStyle(muted)
                 Spacer()
                 Button("收起设置") { onDismiss() }.buttonStyle(.borderedProminent).controlSize(.small).keyboardShortcut(.cancelAction)
             }
@@ -185,7 +253,7 @@ struct SettingsView: View {
         HStack(spacing: 16) {
             label(text).frame(width: 52, alignment: .leading)
             Slider(value: value, in: range).controlSize(.mini).accessibilityLabel(text)
-            Text(valueText).font(.system(size: 10, design: .monospaced)).foregroundStyle(muted).frame(width: 35, alignment: .trailing)
+            Text(valueText).font(.system(size: 10, design: .monospaced)).foregroundStyle(muted).frame(width: 48, alignment: .trailing)
         }
     }
     private func addInstrument() {
@@ -194,36 +262,16 @@ struct SettingsView: View {
     }
 }
 
-private struct CurvePreview: View {
-    let values: [Double]
-    let color: Color
-    let opacity: Double
-    let width: Double
-    let updating: Bool
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 24, paused: !updating)) { timeline in
-          Canvas { context, size in
-            let points = CurveGeometry.normalize(values)
-            guard !points.isEmpty else { return }
-            var path = Path()
-            for (index, p) in points.enumerated() {
-                let point = CGPoint(x: 2 + p.x * (size.width - 4), y: 2 + (1 - p.y) * (size.height - 4))
-                if index == 0 { path.move(to: point) } else { path.addLine(to: point) }
-            }
-            context.stroke(path, with: .color(color.opacity(opacity)), style: StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round))
-            if let last = points.last {
-                let end = CGPoint(x: 2 + last.x * (size.width - 4), y: 2 + (1 - last.y) * (size.height - 4))
-                if updating {
-                    let breath = (sin(timeline.date.timeIntervalSinceReferenceDate * .pi * 2 / 2.6) + 1) / 2
-                    let radius = 2.8 + breath * 1.4
-                    context.fill(Path(ellipseIn: CGRect(x: end.x - radius, y: end.y - radius, width: radius * 2, height: radius * 2)),
-                                 with: .color(color.opacity(opacity * (0.08 + breath * 0.10))))
-                }
-                let radius = max(1.65, width * 0.85)
-                context.fill(Path(ellipseIn: CGRect(x: end.x - radius, y: end.y - radius, width: radius * 2, height: radius * 2)),
-                             with: .color(color.opacity(opacity)))
-            }
-          }
-        }.accessibilityLabel("曲线预览")
+private struct CurvePreview: NSViewRepresentable {
+    @ObservedObject var model: AppModel
+    func makeNSView(context: Context) -> CurveView {
+        let view = CurveView()
+        view.allowsInteraction = false
+        view.canvasBackground = NSColor(calibratedRed: 0.981, green: 0.976, blue: 0.965, alpha: 1)
+        return view
     }
+    func updateNSView(_ nsView: CurveView, context: Context) {
+        nsView.configure(model: model, visible: true)
+    }
+    static func dismantleNSView(_ nsView: CurveView, coordinator: ()) { nsView.stopAnimation() }
 }

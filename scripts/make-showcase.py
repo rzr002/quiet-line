@@ -108,3 +108,14 @@ for index in range(76):
 frames[0].save(OUT / "interaction.gif", save_all=True, append_images=frames[1:],
                duration=[90]*75+[1200], loop=0, optimize=True, disposal=2)
 print("Generated:", ", ".join(p.name for p in OUT.iterdir()))
+
+# Finder icon for the downloadable app. This only draws the project's own curve artwork.
+icon = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+idraw = ImageDraw.Draw(icon)
+idraw.rounded_rectangle((24, 24, 1000, 1000), radius=210, fill=PAPER)
+shape = curve(140, 270, 744, 550)
+idraw.line(shape, fill=INK, width=18, joint="curve")
+ex, ey = shape[-1]
+idraw.ellipse((ex-17, ey-17, ex+17, ey+17), fill=INK)
+icon.save(ROOT / "Resources/AppIcon.icns", format="ICNS")
+print("Generated Resources/AppIcon.icns")

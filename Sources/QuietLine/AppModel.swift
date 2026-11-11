@@ -30,6 +30,16 @@ final class AppModel: ObservableObject {
     @Published var opacity: Double = 0.72 { didSet { updatePreferences() } }
     @Published var thickness: Double = 1.3 { didSet { updatePreferences() } }
     @Published var ink: Ink = .graphite { didSet { updatePreferences() } }
+    @Published var curveMode: CurveMode = .line { didSet { updatePreferences() } }
+    @Published var textContent = "行到水穷处，坐看云起时。 " {
+        didSet {
+            guard ready else { return }
+            defaults.set(textContent, forKey: "textContent")
+            onVisualChange?()
+        }
+    }
+    @Published var textSpeed: Double = 18 { didSet { updatePreferences() } }
+    @Published var textFontSize: Double = 14 { didSet { updatePreferences() } }
     var onVisualChange: (() -> Void)?
     private var fetchTask: Task<Void, Never>?
     private var timer: Task<Void, Never>?
@@ -53,6 +63,10 @@ final class AppModel: ObservableObject {
             thickness = min(3, max(0.6, defaults.double(forKey: "thickness")))
             ink = Ink(rawValue: defaults.integer(forKey: "ink")) ?? .graphite
         }
+        curveMode = CurveMode(rawValue: defaults.string(forKey: "curveMode") ?? "line") ?? .line
+        textContent = defaults.string(forKey: "textContent") ?? textContent
+        if defaults.object(forKey: "textSpeed") != nil { textSpeed = min(100, max(0, defaults.double(forKey: "textSpeed"))) }
+        if defaults.object(forKey: "textFontSize") != nil { textFontSize = min(24, max(9, defaults.double(forKey: "textFontSize"))) }
         ready = true
     }
 
@@ -139,6 +153,9 @@ final class AppModel: ObservableObject {
         defaults.set(width, forKey: "width"); defaults.set(height, forKey: "height")
         defaults.set(opacity, forKey: "opacity"); defaults.set(thickness, forKey: "thickness")
         defaults.set(ink.rawValue, forKey: "ink")
+        defaults.set(curveMode.rawValue, forKey: "curveMode")
+        defaults.set(textSpeed, forKey: "textSpeed")
+        defaults.set(textFontSize, forKey: "textFontSize")
         onVisualChange?()
     }
 }

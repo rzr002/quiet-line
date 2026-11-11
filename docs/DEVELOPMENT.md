@@ -11,9 +11,19 @@ bash scripts/build.sh
 open "dist/Quiet Line.app"
 ```
 
-生成当前机器架构的 `dist/Quiet Line.app` 与 `dist/Quiet-Line-macOS.zip`。构建脚本进行本地临时签名，没有 Apple 开发者签名或公证。`dist` 和 Swift 构建缓存不进入 Git。
+默认生成当前机器架构的 `dist/Quiet Line.app` 与 `dist/Quiet-Line-macOS.zip`。`VERSION` 管理版本号，`Resources/AppIcon.icns` 随包复制。构建脚本进行本地临时签名，没有 Apple Developer ID 签名或公证。`dist` 和 Swift 构建缓存不进入 Git。
 
-源码编译后才能获得 `.app`；仓库中没有可直接运行的预编译安装包。`启动.command` 只会在 `.app` 不存在时构建，更新源码后请重新运行 `bash scripts/build.sh`。
+普通使用者可从 [Releases](https://github.com/rzr002/quiet-line/releases/latest) 下载预编译 DMG，无须开发环境。`启动.command` 只会在本地 `.app` 不存在时构建，更新源码后请重新运行 `bash scripts/build.sh`。
+
+### 制作发布包
+
+```bash
+bash scripts/package-release.sh
+```
+
+脚本分别编译 `arm64-apple-macosx14.0` 和 `x86_64-apple-macosx14.0`，通过 `lipo` 合并，生成 Universal 应用、包含 Applications 入口的 DMG、ZIP、安装说明和 SHA-256 文件。输出位于 `dist/releases/<VERSION>/`，与当前运行的开发版分开。
+
+发布前检查应用签名、两种架构、最低系统版本、只读挂载内容和从安装包取出的应用。Intel 为交叉编译，尚未实机验证。
 
 ## 测试
 
@@ -23,7 +33,7 @@ SWIFTPM_MODULECACHE_OVERRIDE="$PWD/.build/module-cache" \
 swift test --disable-sandbox
 ```
 
-单元测试不请求网络。覆盖范围包括：交易对输入、现货/永续路由、行情错误、成交时间、滚动时间桶、曲线归一化和数据过期。
+单元测试不请求网络。覆盖范围包括：交易对输入、现货/永续路由、行情错误、成交时间、滚动时间桶、曲线归一化、数据过期、文字循环布局、长文本定位及 TXT 编码。
 
 有网络时可手动验证内置 QQQUSDT、SPYUSDT、NVDAUSDT 的历史曲线和最新成交：
 
@@ -58,13 +68,19 @@ QUIETLINE_PROXY_PORT=7890 "dist/Quiet Line.app/Contents/MacOS/QuietLine"
 - `24 小时` 使用 `5m` K 线，保留 288 个点。
 - 最新聚合成交按交易所时间戳更新最后一个时间桶，旧成交不会将序列倒退。
 - 目标请求周期为 2 秒；请求串行进行，网络耗时会延长实际间隔。
-- 浮窗只显示曲线、末端点和轻微光晕。设置页显示来源与成交时间。
+- 线条模式只显示曲线、末端点和轻微光晕；文字模式只显示沿价格形状排布的正向字符。设置页显示来源与成交时间。
 - 纵轴为当前可见价格的最小值到最大值，不能通过曲线高度比较绝对收益。
 - 永续合约、股票现货与指数是不同的价格序列。
 
 ## 本地状态
 
-标的、外观、位置保存在 `dev.quietline.demo` 偏好域。应用不读取交易账户。只有当前选择的公开标的会发往对应行情源。
+标的、外观、位置及自定义文字保存在 `dev.quietline.demo` 偏好域。导入 TXT 后保存的是文本内容，不会在后台继续读取源文件，也不会上传文本。应用不读取交易账户。只有当前选择的公开标的会发往对应行情源。
+
+## 文字曲线
+
+`TextCurveFlow` 以字形宽度前缀和定位当前阅读位置，再对归一化价格曲线进行线性插值。每帧仅布局可见字形，不遍历整本小说；字形宽度在文字或字号变化时缓存。中文和组合 emoji 按 Swift Character 拆分，换行与连续空白合并为空格。
+
+滚动速度为 0–100 px/s，字号为 9–24 pt。隐藏浮窗停止动画和定时行情请求；文字滚动本身不表示市场产生了新成交。设置预览与悬浮窗共用 `CurveView`，预览不响应拖动或双击隐藏。TXT 导入限制 5 MB，支持 UTF-8、带 BOM 的 UTF-16 和 GB18030。
 
 ## 目录
 
@@ -74,7 +90,8 @@ QUIETLINE_PROXY_PORT=7890 "dist/Quiet Line.app/Contents/MacOS/QuietLine"
 | `Sources/QuietLine` | 设置界面、菜单栏、透明窗口 |
 | `Tests/QuietLineCoreTests` | 离线单元测试 |
 | `scripts/build.sh` | 本机应用和 ZIP 打包 |
-| `scripts/make-showcase.py` | 生成 README 的示意素材，需 Pillow |
+| `scripts/make-showcase.py` | 生成 README 示意素材与应用图标，需 Pillow |
+| `scripts/package-release.sh` | Universal 应用、DMG、ZIP 和校验文件 |
 | `.agents/product-marketing.md` | 产品定位、文案边界与证据 |
 | `docs/MARKETING.md` | 仓库描述与可复制介绍草稿 |
 

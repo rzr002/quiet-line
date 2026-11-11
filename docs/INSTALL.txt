@@ -1,0 +1,47 @@
+Quiet Line for Mac
+macOS 14+ | Universal: Apple Silicon + Intel
+
+安装
+1. 打开 Quiet-Line-0.4.0-macOS-universal.dmg。
+2. 将 Quiet Line.app 拖到旁边的 Applications（应用程序）。
+3. 从「应用程序」打开 Quiet Line。
+4. 选择标的后，把透明曲线拖到桌面合适位置。
+
+双击曲线可以隐藏。再次显示时，点菜单栏曲线图标，打开设置，点「显示曲线」。
+
+文字曲线
+在设置里将「显示方式」切到「文字曲线」，输入短句或点「导入 TXT…」读取小说。
+文字沿真实走势排列并循环滚动，速度设为 0 可暂停；字号、颜色和窗口大小都可调整。
+支持 UTF-8、带 BOM 的 UTF-16 及 GB18030；文件不超过 5 MB。导入内容只保存在本机。
+天气文案是示例，不是实时天气；文字滚动不等于有新的市场成交。
+
+此安装包已预编译，使用时不需要 Swift、Xcode 或 Python。
+
+签名与首次启动
+这个社区 demo 使用本地 ad-hoc 签名，尚未经过 Apple Developer ID 签名和公证。
+macOS 可能阻止首次打开。请先确认文件来自本仓库 Releases，并核对 SHA256SUMS.txt。
+如果你决定信任这个版本，请在尝试打开之后，按 Apple 官方指引，在
+「系统设置 → 隐私与安全性」处理该应用的提示。
+不需要关闭整个系统的安全保护，也不需要运行清除隔离或关闭 Gatekeeper 的命令。
+Apple 指引：https://support.apple.com/en-us/102445
+
+网络
+现货和永续行情来自币安公开接口；连接取决于本机网络及数据源可用性。
+当前合约客户端会尝试本机 127.0.0.1:7897 代理，连接失败时尝试直连。
+需要其他端口时，参见仓库 docs/DEVELOPMENT.md 的网络配置。
+
+English
+1. Open the DMG, then drag Quiet Line.app onto Applications.
+2. Open Quiet Line from Applications. No developer tools are required to run it.
+3. Choose a symbol, drag the transparent curve into place, and double-click to hide.
+4. Use the menu-bar curve icon to open settings and restore the curve.
+5. Select 文字曲线 (Text curve) to type a sentence or import a local TXT novel.
+   Adjust speed (0 pauses) and font size. Text follows the real market shape and loops.
+
+This demo is ad-hoc signed and has not been notarized by Apple. A first-launch security
+prompt is possible. Verify the release source and SHA256 checksums, then follow Apple's
+instructions above if you choose to trust it. Intel is cross-compiled; runtime smoke
+testing for this release was performed on Apple Silicon.
+
+Repository: https://github.com/rzr002/quiet-line
+Releases: https://github.com/rzr002/quiet-line/releases

@@ -8,11 +8,11 @@
 
 **英文一句话：** One market curve on your desktop.
 
-**GitHub About：** A transparent macOS market curve. Choose a symbol, place one line, double-click to hide.
+**GitHub About：** A transparent macOS market curve, drawn as a line or scrolling text. Double-click to hide.
 
 **主题：** macos, swift, swiftui, appkit, desktop-widget, market-data, binance, minimalism
 
-主动作是「在 Mac 上启动」。当前是源码 demo，因此入口明确告诉读者先准备 Swift 6，再构建应用。
+主动作是「下载 Mac 版」。预编译 Universal DMG 可拖入 Applications，源代码构建入口保留给开发者。
 
 ## 选择理由
 
@@ -37,9 +37,9 @@
 
 Quiet Line 是一个 macOS 透明曲线 demo。选好标的，把一条曲线放在桌面一角；双击就能隐藏，再到设置页恢复。
 
-悬浮窗口只显示走势和右端的小圆点。符号名称、行情来源、颜色和尺寸都放在单独的设置窗口里。支持 Binance 的 QQQUSDT、SPYUSDT、美股映射永续，以及 BTC、ETH、SOL 等现货交易对，以每 2 秒为目标间隔读取最新成交。
+悬浮窗口可以显示线条和小圆点，也可以让短句或小说沿真实价格形状滚动。支持本地 TXT、滚动速度和字号调整。符号名称、行情来源、颜色和尺寸都放在单独的设置窗口里。支持 Binance 的 QQQUSDT、SPYUSDT、美股映射永续，以及 BTC、ETH、SOL 等现货交易对，以每 2 秒为目标间隔读取最新成交。
 
-当前提供源码，需要 macOS 14+ 与 Swift 6。价格来源是对应币安市场，可能与美股现货不同。
+当前提供 macOS 14+ Universal DMG，包含 Apple Silicon 与 Intel 架构。版本尚未经过 Apple 公证。价格来源是对应币安市场，可能与美股现货不同。
 
 仓库：https://github.com/rzr002/quiet-line
 
@@ -47,9 +47,9 @@ Quiet Line 是一个 macOS 透明曲线 demo。选好标的，把一条曲线放
 
 Quiet Line puts one transparent market curve on your Mac desktop. Choose a symbol, drag the curve into place, and double-click to hide it. Restore it from settings.
 
-The floating window draws a curve and a small endpoint. Symbol names and controls live in a separate settings window. It supports Binance spot pairs and perpetual contracts including QQQUSDT, SPYUSDT and NVDAUSDT.
+The floating window draws a line and endpoint, or scrolling text along the real price shape. Import a local TXT novel or type a sentence, then adjust speed and font size. Symbol names and controls live in a separate settings window. It supports Binance spot pairs and perpetual contracts including QQQUSDT, SPYUSDT and NVDAUSDT.
 
-This is an early source demo for macOS 14+ and Swift 6. The settings interface is in Chinese. Perpetual-contract prices can differ from the underlying shares or index.
+Download the Universal DMG for macOS 14+ (Apple Silicon and Intel). This early build is not Apple-notarized. The settings interface is in Chinese. Perpetual-contract prices can differ from the underlying shares or index.
 
 Repository: https://github.com/rzr002/quiet-line
 
