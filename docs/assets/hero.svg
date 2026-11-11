@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+<title id="title">Quiet Line: one market curve on your desktop</title>
+<desc id="desc">Illustrative market curve on a warm paper background with a small endpoint. Not a live quote or desktop capture.</desc>
+<rect width="1600" height="760" rx="24" fill="#f6f4ef"/>
+<path d="M 88 83 l 12 -8 11 14 14 -22 13 11" stroke="#303a33" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="158" y="91" fill="#303a33" font-family="Georgia,serif" font-size="36">quiet line</text>
+<text x="1512" y="87" text-anchor="end" fill="#7f857d" font-family="monospace" font-size="16" letter-spacing="2">macOS 14+ / SOURCE DEMO</text>
+<text x="86" y="239" fill="#303a33" font-family="Georgia,serif" font-size="88" letter-spacing="-3">One market curve.</text>
+<text x="86" y="337" fill="#303a33" font-family="Georgia,serif" font-size="88" letter-spacing="-3">On your desktop.</text>
+<text x="1512" y="330" text-anchor="end" fill="#7f857d" font-family="PingFang SC,sans-serif" font-size="30">屏幕上，只留一条线。</text>
+<path d="M 88.0,489.1 L 118.3,479.7 L 148.6,493.8 L 178.9,475.0 L 209.2,472.6 L 239.5,505.6 L 269.8,524.5 L 300.1,534.0 L 330.4,529.2 L 360.7,548.1 L 391.0,555.2 L 421.3,550.5 L 451.6,541.0 L 481.9,552.8 L 512.2,543.4 L 542.5,519.8 L 572.8,510.4 L 603.1,517.4 L 633.4,498.6 L 663.7,508.0 L 694.0,524.5 L 724.3,534.0 L 754.6,526.9 L 784.9,505.6 L 815.1,496.2 L 845.4,503.3 L 875.7,482.0 L 906.0,470.2 L 936.3,477.3 L 966.6,458.4 L 996.9,441.9 L 1027.2,463.2 L 1057.5,491.5 L 1087.8,479.7 L 1118.1,465.5 L 1148.4,472.6 L 1178.7,451.4 L 1209.0,444.3 L 1239.3,460.8 L 1269.6,453.7 L 1299.9,437.2 L 1330.2,446.6 L 1360.5,432.5 L 1390.8,439.6 L 1421.1,427.8 L 1451.4,434.8 L 1481.7,446.6 L 1512.0,439.6" fill="none" stroke="#70786f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1512.0" cy="439.56" r="8" fill="#70786f" opacity=".10"/><circle cx="1512.0" cy="439.56" r="3.5" fill="#70786f"/>
+<line x1="88" y1="674" x2="1512" y2="674" stroke="#303a33" stroke-opacity=".12"/>
+<text x="88" y="714" fill="#7f857d" font-family="monospace" font-size="15" letter-spacing="1">CHOOSE A SYMBOL / DRAG TO PLACE / DOUBLE-CLICK TO HIDE</text>
+<text x="1512" y="714" text-anchor="end" fill="#7f857d" font-family="monospace" font-size="12">ILLUSTRATION</text>
+</svg>

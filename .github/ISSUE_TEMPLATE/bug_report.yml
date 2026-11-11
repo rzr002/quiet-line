@@ -1,0 +1,28 @@
+name: Bug report / 问题反馈
+description: Report a reproducible problem with the Mac demo.
+body:
+  - type: input
+    id: system
+    attributes:
+      label: macOS version and Mac architecture
+      placeholder: macOS 15, Apple Silicon
+    validations:
+      required: true
+  - type: input
+    id: symbol
+    attributes:
+      label: Symbol and venue / 标的与市场
+      placeholder: QQQUSDT, perpetual / 永续
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps and expected behavior / 复现步骤与预期
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and settings error / 实际表现与设置页错误
+      description: Include public symbol data only; omit account credentials or private desktop content.
+    validations:
+      required: true
