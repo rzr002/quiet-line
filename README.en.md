@@ -36,11 +36,15 @@ Text mode shows upright characters following the actual market shape, scrolling 
 
 Set speed from 0 to 100 px/s and font size from 9 to 24 pt. Zero pauses scrolling. Market updates and symbol changes keep the reading position; changing the text or font size restarts it. Text and preferences stay on the local Mac. Weather copy is an example, not a live forecast. Scrolling alone does not indicate a new trade.
 
+The 青玉案 button loads He Zhu's public-domain poem, ending in “梅子黄时雨”.
+
+Characters travel at a constant speed along the curve, slowing their horizontal movement on steep segments while preserving the full price shape.
+
 ## Run on your Mac
 
 ### Install the DMG
 
-**[Download Quiet Line 0.4.0 for Mac](https://github.com/rzr002/quiet-line/releases/download/v0.4.0/Quiet-Line-0.4.0-macOS-universal.dmg)** · [ZIP alternative](https://github.com/rzr002/quiet-line/releases/download/v0.4.0/Quiet-Line-0.4.0-macOS-universal.zip)
+**[Download Quiet Line 0.4.1 for Mac](https://github.com/rzr002/quiet-line/releases/download/v0.4.1/Quiet-Line-0.4.1-macOS-universal.dmg)** · [ZIP alternative](https://github.com/rzr002/quiet-line/releases/download/v0.4.1/Quiet-Line-0.4.1-macOS-universal.zip)
 
 1. Open the DMG and drag `Quiet Line.app` onto **Applications**.
 2. Open Quiet Line from Applications. Quit an existing copy before replacing it.

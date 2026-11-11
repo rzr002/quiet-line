@@ -46,3 +46,24 @@ import Testing
     #expect(try TextCurveContent.decode(Data([0xFF, 0xFE, 0x25, 0x66])) == "春")
     #expect(try TextCurveContent.decode(Data([0xD6, 0xD0, 0xCE, 0xC4])) == "中文")
 }
+
+@Test func alongCurveMotionKeepsTravelSpeedOnASteepPriceSegment() {
+    let flow = TextCurveFlow(glyphWidths: [30])
+    let points = [CurvePoint(x: 0, y: 0), CurvePoint(x: 1, y: 1)]
+    let before = flow.placements(points: points, width: 60, height: 800, inset: 0, offset: 0, alongCurve: true)
+    let after = flow.placements(points: points, width: 60, height: 800, inset: 0, offset: 5, alongCurve: true)
+    #expect(before.count > 2)
+    for (a, b) in zip(before.dropFirst(), after.dropFirst()) {
+        #expect(abs(hypot(a.x - b.x, a.y - b.y) - 5) < 0.000_001)
+    }
+}
+
+@Test func alongCurveMotionKeepsTheFullPricePeakAndLoopsText() {
+    let edge = hypot(50.0, 100.0)
+    let flow = TextCurveFlow(glyphWidths: [edge])
+    let points = [CurvePoint(x: 0, y: 0), CurvePoint(x: 0.5, y: 1), CurvePoint(x: 1, y: 0)]
+    let items = flow.placements(points: points, width: 100, height: 100, inset: 0, offset: 0, alongCurve: true)
+    #expect(items.contains { abs($0.x - 50) < 0.000_001 && abs($0.y - 100) < 0.000_001 })
+    #expect(items.allSatisfy { $0.index == 0 })
+    #expect(items == flow.placements(points: points, width: 100, height: 100, inset: 0, offset: edge, alongCurve: true))
+}

@@ -50,7 +50,9 @@ final class CurveView: NSView {
             let attributes: [NSAttributedString.Key: Any] = [.font: font]
             flow = TextCurveFlow(glyphWidths: glyphs.map { glyph in
                 if let width = measured[glyph] { return width }
-                let width = (glyph as NSString).size(withAttributes: attributes).width + 0.8
+                let size = (glyph as NSString).size(withAttributes: attributes)
+                // Upright glyphs need room on steep segments as well as on horizontal ones.
+                let width = hypot(size.width + 0.8, size.height)
                 measured[glyph] = width
                 return width
             })
@@ -156,7 +158,7 @@ final class CurveView: NSView {
         var displayed = points
         if let endpoint = displayedEndpoint(at: Date()) { displayed[displayed.count - 1] = endpoint }
         let positions = flow.placements(points: displayed, width: bounds.width, height: bounds.height,
-                                        inset: max(6, textHeight / 2 + 2), offset: textOffset)
+                                        inset: max(6, textHeight / 2 + 2), offset: textOffset, alongCurve: true)
         let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: ink.withAlphaComponent(opacity)]
         for position in positions {
             (glyphs[position.index] as NSString).draw(at: NSPoint(x: position.x, y: position.y - textHeight / 2),

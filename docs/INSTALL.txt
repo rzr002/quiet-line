@@ -2,7 +2,7 @@ Quiet Line for Mac
 macOS 14+ | Universal: Apple Silicon + Intel
 
 安装
-1. 打开 Quiet-Line-0.4.0-macOS-universal.dmg。
+1. 打开 Quiet-Line-0.4.1-macOS-universal.dmg。
 2. 将 Quiet Line.app 拖到旁边的 Applications（应用程序）。
 3. 从「应用程序」打开 Quiet Line。
 4. 选择标的后，把透明曲线拖到桌面合适位置。
@@ -12,6 +12,8 @@ macOS 14+ | Universal: Apple Silicon + Intel
 文字曲线
 在设置里将「显示方式」切到「文字曲线」，输入短句或点「导入 TXT…」读取小说。
 文字沿真实走势排列并循环滚动，速度设为 0 可暂停；字号、颜色和窗口大小都可调整。
+文字沿曲线匀速行进，陡处横向移动自动放慢，保留完整的价格走势。
+点击「青玉案」可使用贺铸“梅子黄时雨”那首词的全文。
 支持 UTF-8、带 BOM 的 UTF-16 及 GB18030；文件不超过 5 MB。导入内容只保存在本机。
 天气文案是示例，不是实时天气；文字滚动不等于有新的市场成交。
 

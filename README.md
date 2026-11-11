@@ -45,8 +45,10 @@
 在设置里切换到「文字曲线」，文字会保持正向，沿真实价格的高低排布，并从右往左循环滚动。浮窗只显示文字；行情更新会改变文字组成的形状。
 
 - 输入一句话、座右铭，或使用内置文案和原创小说片段。
+- 内置贺铸《青玉案·凌波不过横塘路》，点击「青玉案」即可使用全文。
 - 导入本地 TXT 阅读长文本，支持 UTF-8、UTF-16（带 BOM）及 GB18030，单文件不超过 5 MB。
 - 调整滚动速度（0–100 px/s）和字号（9–24 pt）。行情刷新和切换标的保留当前阅读位置；改换文字或字号会从头开始。
+- 文字沿曲线匀速行进，陡处自动放慢横向移动，保留完整的价格走势。
 
 文字与设置仅保存在本机。内置天气文案是示例，不提供实时天气。文字滚动与价格更新是两件事：文字在移动，不代表出现了新成交。
 
@@ -54,7 +56,7 @@
 
 ### 下载 DMG（推荐）
 
-**[下载 Quiet Line 0.4.0 for Mac](https://github.com/rzr002/quiet-line/releases/download/v0.4.0/Quiet-Line-0.4.0-macOS-universal.dmg)** · [ZIP 备用下载](https://github.com/rzr002/quiet-line/releases/download/v0.4.0/Quiet-Line-0.4.0-macOS-universal.zip)
+**[下载 Quiet Line 0.4.1 for Mac](https://github.com/rzr002/quiet-line/releases/download/v0.4.1/Quiet-Line-0.4.1-macOS-universal.dmg)** · [ZIP 备用下载](https://github.com/rzr002/quiet-line/releases/download/v0.4.1/Quiet-Line-0.4.1-macOS-universal.zip)
 
 1. 打开 DMG，把 `Quiet Line.app` 拖到旁边的 **Applications（应用程序）**。
 2. 从「应用程序」打开 Quiet Line；已有旧版时，先从菜单栏退出旧版。

@@ -48,7 +48,7 @@ metadata = {
     'CFBundleDisplayName': 'Quiet Line',
     'CFBundlePackageType': 'APPL',
     'CFBundleShortVersionString': sys.argv[2],
-    'CFBundleVersion': '5',
+    'CFBundleVersion': '6',
     'CFBundleIconFile': 'AppIcon',
     'LSMinimumSystemVersion': '14.0',
     'LSUIElement': True,

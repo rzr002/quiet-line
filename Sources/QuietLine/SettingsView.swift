@@ -188,10 +188,13 @@ struct SettingsView: View {
                 Button("座右铭") { useText("行到水穷处，坐看云起时。") }
                 Button("天气文案") { useText("今日天气文案示例：晴间多云，微风经过窗边，适合出门散步。") }
                 Button("小说片段") { useText("末班车驶过旧桥时，江面上亮起了第一盏灯。林舟把信折好，放进大衣口袋，走向那家还没打烊的书店。门铃响起，柜台后的猫抬了抬眼。") }
+                Button("青玉案") { useText("凌波不过横塘路，但目送、芳尘去。锦瑟华年谁与度？月桥花院，琐窗朱户，只有春知处。飞云冉冉蘅皋暮，彩笔新题断肠句。试问闲情都几许？一川烟草，满城风絮，梅子黄时雨。") }
             }.controlSize(.mini)
             sliderRow("滚动速度", value: $model.textSpeed, range: 0...100,
                       valueText: model.textSpeed == 0 ? "暂停" : "\(Int(model.textSpeed.rounded()))px/s")
             sliderRow("字号", value: $model.textFontSize, range: 9...24, valueText: "\(Int(model.textFontSize))pt")
+            Text("文字沿曲线匀速走，陡处自动放慢横向移动。")
+                .font(.system(size: 10)).foregroundStyle(muted)
             Text(textError ?? "短句和小说都会从头循环。TXT 仅保存在本机；天气文案是示例，不是实时预报。")
                 .font(.system(size: 10)).foregroundStyle(textError == nil ? muted : .brown)
         }

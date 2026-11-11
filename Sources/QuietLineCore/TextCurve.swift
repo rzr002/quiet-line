@@ -40,12 +40,24 @@ public struct TextCurveFlow: Sendable {
         prefix = accumulated
     }
     public var cycleWidth: Double { prefix.last ?? 0 }
-    public func placements(points: [CurvePoint], width: Double, height: Double, inset: Double, offset: Double) -> [TextGlyphPlacement] {
+    public func placements(points: [CurvePoint], width: Double, height: Double, inset: Double, offset: Double, alongCurve: Bool = false) -> [TextGlyphPlacement] {
         guard !widths.isEmpty, cycleWidth > 0, points.count >= 2,
               width.isFinite, height.isFinite, width > 0, height > 0 else { return [] }
         let padding = min(max(0, inset), min(width, height) / 2)
         let span = width - padding * 2
         guard span > 0 else { return [] }
+        let path = points.map { CurvePoint(x: padding + $0.x * span, y: padding + $0.y * (height - padding * 2)) }
+        var distances = points.map { $0.x * span }
+        if alongCurve {
+            distances = [0]
+            for index in 1..<path.count {
+                let previous = path[index - 1]
+                let next = path[index]
+                distances.append(distances.last! + hypot(next.x - previous.x, next.y - previous.y))
+            }
+        }
+        let pathLength = alongCurve ? distances.last! : span
+        guard pathLength > 0 else { return [] }
         let phase = offset.isFinite ? ((offset.truncatingRemainder(dividingBy: cycleWidth) + cycleWidth).truncatingRemainder(dividingBy: cycleWidth)) : 0
         // Binary search keeps a long novel's off-screen text out of each animation frame.
         var low = 0
@@ -55,21 +67,22 @@ public struct TextCurveFlow: Sendable {
             if prefix[middle + 1] <= phase { low = middle + 1 } else { high = middle }
         }
         var index = min(low, widths.count - 1)
-        var x = padding - (phase - prefix[index])
+        var position = -(phase - prefix[index])
         var result: [TextGlyphPlacement] = []
-        while x < width - padding {
-            let fraction = min(1, max(0, (x - padding) / span))
+        while position < pathLength {
             var left = 0
             var right = points.count - 1
             while right - left > 1 {
                 let middle = (left + right) / 2
-                if points[middle].x <= fraction { left = middle } else { right = middle }
+                if distances[middle] <= position { left = middle } else { right = middle }
             }
-            let distance = points[right].x - points[left].x
-            let t = distance > 0 ? min(1, max(0, (fraction - points[left].x) / distance)) : 0
-            let y = points[left].y + (points[right].y - points[left].y) * t
-            result.append(TextGlyphPlacement(index: index, x: x, y: padding + y * (height - padding * 2)))
-            x += widths[index]
+            let distance = distances[right] - distances[left]
+            let progress = distance > 0 ? (position - distances[left]) / distance : 0
+            let t = alongCurve ? progress : min(1, max(0, progress))
+            let x = alongCurve ? path[left].x + (path[right].x - path[left].x) * t : padding + position
+            let y = path[left].y + (path[right].y - path[left].y) * t
+            result.append(TextGlyphPlacement(index: index, x: x, y: y))
+            position += widths[index]
             index = (index + 1) % widths.count
         }
         return result
